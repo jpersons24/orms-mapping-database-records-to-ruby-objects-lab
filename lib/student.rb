@@ -3,16 +3,39 @@ class Student
 
   def self.new_from_db(row)
     # create a new Student object given a row from the database
+    new_student = self.new
+    new_student.id = row[0]
+    new_student.name = row[1]
+    new_student.grade = row[2]
+    new_student
+
   end
 
   def self.all
-    # retrieve all the rows from the "Students" database
-    # remember each row should be a new instance of the Student class
+    # returns array of all Students instance reflecting the respective table rows they represent
+    sql = <<-SQL
+      SELECT *
+      FROM students
+    SQL
+
+    DB[:conn].execute(sql).map do |row|
+      self.new_from_db(row)
+    end
   end
 
   def self.find_by_name(name)
     # find the student in the database given a name
     # return a new instance of the Student class
+    sql = <<-SQL
+      SELECT *
+      FROM students
+      WHERE name = ?
+      LIMIT 1
+    SQL
+
+    DB[:conn].execute(sql, name).map do |row|
+      self.new_from_db(row)
+    end.first
   end
   
   def save
@@ -40,4 +63,76 @@ class Student
     sql = "DROP TABLE IF EXISTS students"
     DB[:conn].execute(sql)
   end
+
+
+  # class method returns array of all the students in grade 9
+  def self.all_students_in_grade_9
+    sql = <<-SQL
+      SELECT *
+      FROM students
+      WHERE grade = 9
+    SQL
+
+    DB[:conn].execute(sql).map do |row|
+      self.new_from_db(row)
+    end
+  end
+
+  # returns array of all students below the 12th grade
+  def self.students_below_12th_grade
+    sql = <<-SQL
+    SELECT *
+    FROM students
+    WHERE grade < 12
+    SQL
+
+    DB[:conn].execute(sql).map do |row|
+      self.new_from_db(row)
+    end
+  end
+
+  # returns array of exactly 'X' number of students / the first 'X' collected
+  def self.first_X_students_in_grade_10(num_of_students)
+    sql = <<-SQL
+    SELECT *
+    FROM students
+    WHERE grade = 10
+    LIMIT ?
+    SQL
+
+    DB[:conn].execute(sql, num_of_students).map do |row|
+      self.new_from_db(row)
+    end
+  end
+
+  # returns the first student that is in grade 10
+  def self.first_student_in_grade_10
+    sql = <<-SQL
+    SELECT *
+    FROM students
+    WHERE grade = 10
+    LIMIT 1
+    SQL
+
+    DB[:conn].execute(sql).map do |row|
+      self.new_from_db(row)
+    end.first
+  end
+
+  # returns array of all students for grade 'X'
+  def self.all_students_in_grade_X(grade)
+    sql = <<-SQL
+      SELECT *  
+      FROM students
+      WHERE grade = ?
+    SQL
+
+    DB[:conn].execute(sql, grade).map do |row|
+      self.new_from_db(row)
+    end
+  end
+
+
+
+
 end
